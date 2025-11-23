@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"api/internal/config"
+	"api/internal/http-server/handlers/courses/delete"
 	"api/internal/http-server/handlers/courses/get"
 	"api/internal/http-server/handlers/courses/save"
 	"api/internal/lib/logger/sl"
@@ -47,7 +48,7 @@ func main() {
 		r.Get("/", get.GetAll(log, psql))
 		r.Get("/{id}", get.GetByID(log, psql))
 		// r.Put("/{id}", )
-		// r.Delete("/{id}", )
+		r.Delete("/{id}", delete.New(log, psql))
 	})
 
 	srv := &http.Server{
