@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"api/internal/config"
+	"api/internal/http-server/handlers/courses/get"
 	"api/internal/http-server/handlers/courses/save"
 	"api/internal/lib/logger/sl"
 	"api/internal/storage/postgresql"
@@ -43,8 +44,8 @@ func main() {
 
 	router.Route("/courses", func(r chi.Router) {
 		r.Post("/", save.New(log, psql))
-		// r.Get("")
-		// r.Get("/{id}",)
+		r.Get("/", get.GetAll(log, psql))
+		r.Get("/{id}", get.GetByID(log, psql))
 		// r.Put("/{id}", )
 		// r.Delete("/{id}", )
 	})

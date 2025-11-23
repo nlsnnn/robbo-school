@@ -10,8 +10,8 @@ var (
 )
 
 type Course struct {
-	Id          int       `db:"id"`
-	Title       string    `db:"title"`
-	Description string    `db:"description"`
-	CreatedAt   time.Time `db:"created_at"`
+	Id          int       `db:"id" json:"id"`
+	Title       string    `db:"title" json:"title"`
+	Description string    `db:"description" json:"description"`
+	CreatedAt   time.Time `db:"created_at" json:"createdAt"`
 }
