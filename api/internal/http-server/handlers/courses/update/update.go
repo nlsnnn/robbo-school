@@ -49,6 +49,7 @@ func New(log *slog.Logger, courseUpdater CourseUpdater) http.HandlerFunc {
 		course, err := courseUpdater.GetCourseByID(r.Context(), id)
 		if errors.Is(err, storage.ErrCourseNotFound) {
 			log.Info("course not found", slog.Int("id", id))
+			w.WriteHeader(http.StatusNotFound)
 			render.JSON(w, r, resp.Error("course not found"))
 			return
 		}

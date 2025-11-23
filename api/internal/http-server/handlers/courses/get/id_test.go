@@ -34,11 +34,12 @@ func (m *MockCourseGetter) GetCourses(ctx context.Context) ([]storage.Course, er
 
 func TestGetByIDHandler(t *testing.T) {
 	cases := []struct {
-		name      string
-		courseID  string
-		respError string
-		mockError error
-		mockResp  storage.Course
+		name           string
+		courseID       string
+		respError      string
+		mockError      error
+		mockResp       storage.Course
+		expectedStatus int
 	}{
 		{
 			name:     "Success",
@@ -48,28 +49,33 @@ func TestGetByIDHandler(t *testing.T) {
 				Title:       "Test Course",
 				Description: "Test Description",
 			},
+			expectedStatus: http.StatusOK,
 		},
 		{
-			name:      "Invalid ID - Not a number",
-			courseID:  "abc",
-			respError: "invalid course id",
+			name:           "Invalid ID - Not a number",
+			courseID:       "abc",
+			respError:      "invalid course id",
+			expectedStatus: http.StatusOK,
 		},
 		{
-			name:      "Invalid ID - Zero",
-			courseID:  "0",
-			respError: "invalid course id",
+			name:           "Invalid ID - Zero",
+			courseID:       "0",
+			respError:      "invalid course id",
+			expectedStatus: http.StatusOK,
 		},
 		{
-			name:      "Not Found",
-			courseID:  "999",
-			respError: "course not found",
-			mockError: storage.ErrCourseNotFound,
+			name:           "Not Found",
+			courseID:       "999",
+			respError:      "course not found",
+			mockError:      storage.ErrCourseNotFound,
+			expectedStatus: http.StatusNotFound,
 		},
 		{
-			name:      "Internal Error",
-			courseID:  "1",
-			respError: "internal error",
-			mockError: errors.New("unexpected error"),
+			name:           "Internal Error",
+			courseID:       "1",
+			respError:      "internal error",
+			mockError:      errors.New("unexpected error"),
+			expectedStatus: http.StatusOK,
 		},
 	}
 
@@ -98,7 +104,7 @@ func TestGetByIDHandler(t *testing.T) {
 
 			r.ServeHTTP(rr, req)
 
-			require.Equal(t, http.StatusOK, rr.Code)
+			require.Equal(t, tc.expectedStatus, rr.Code)
 
 			body := rr.Body.String()
 
