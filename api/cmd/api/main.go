@@ -1,11 +1,17 @@
 package main
 
 import (
+	"log/slog"
+	"net/http"
+	"os"
+
 	"api/internal/config"
+	"api/internal/http-server/handlers/courses/save"
 	"api/internal/lib/logger/sl"
 	"api/internal/storage/postgresql"
-	"log/slog"
-	"os"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 const (
@@ -21,13 +27,41 @@ func main() {
 
 	log.Info("Start app", slog.String("env", cfg.Env))
 
-	storage, err := postgresql.New(cfg.Db)
+	psql, err := postgresql.New(cfg.Db)
 	if err != nil {
 		log.Error("failed to init storage", sl.Err(err))
 		os.Exit(1)
 	}
 
-	_ = storage
+	router := chi.NewRouter()
+
+	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
+
+	router.Route("/courses", func(r chi.Router) {
+		r.Post("/", save.New(log, psql))
+		// r.Get("")
+		// r.Get("/{id}",)
+		// r.Put("/{id}", )
+		// r.Delete("/{id}", )
+	})
+
+	srv := &http.Server{
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.Timeout,
+		WriteTimeout: cfg.Timeout,
+		IdleTimeout:  cfg.IdleTimeout,
+	}
+
+	log.Info("starting http server", slog.String("address", cfg.Address))
+
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Error("failed to start server")
+	}
 
 }
 
