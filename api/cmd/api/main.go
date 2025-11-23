@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"api/internal/config"
 	"api/internal/http-server/handlers/courses/delete"
@@ -60,12 +64,33 @@ func main() {
 		IdleTimeout:  cfg.IdleTimeout,
 	}
 
-	log.Info("starting http server", slog.String("address", cfg.Address))
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error("failed to start server")
+		}
+	}()
 
-	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Error("failed to start server")
+	log.Info("server started")
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	<-stop
+
+	log.Info("stopping server")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("failed to stop server", sl.Err(err))
 	}
 
+	if err := psql.Close(); err != nil {
+		log.Error("failed to close storage", sl.Err(err))
+	}
+
+	log.Info("server stopped")
 }
 
 func setupLogger(env string) *slog.Logger {
