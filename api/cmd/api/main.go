@@ -2,6 +2,8 @@ package main
 
 import (
 	"api/internal/config"
+	"api/internal/lib/logger/sl"
+	"api/internal/storage/postgresql"
 	"log/slog"
 	"os"
 )
@@ -18,6 +20,14 @@ func main() {
 	log := setupLogger(cfg.Env)
 
 	log.Info("Start app", slog.String("env", cfg.Env))
+
+	storage, err := postgresql.New(cfg.Db)
+	if err != nil {
+		log.Error("failed to init storage", sl.Err(err))
+		os.Exit(1)
+	}
+
+	_ = storage
 
 }
 
