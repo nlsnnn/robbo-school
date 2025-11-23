@@ -70,7 +70,7 @@ func main() {
 		}
 	}()
 
-	log.Info("server started")
+	log.Info("server started", slog.String("address", cfg.Address))
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)

@@ -31,5 +31,25 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
 
+  api:
+    depends_on:
+      db:
+        condition: service_healthy
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      HTTP_SERVER_ADDRESS: ${HTTP_SERVER_ADDRESS}
+      CONFIG_PATH: /build/config/local.yaml
+    ports:
+      - "8080:8080"
+    restart: on-failure
+  
+
 volumes:
   db_data:
