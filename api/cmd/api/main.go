@@ -9,6 +9,7 @@ import (
 	"api/internal/http-server/handlers/courses/delete"
 	"api/internal/http-server/handlers/courses/get"
 	"api/internal/http-server/handlers/courses/save"
+	"api/internal/http-server/handlers/courses/update"
 	"api/internal/lib/logger/sl"
 	"api/internal/storage/postgresql"
 
@@ -47,7 +48,7 @@ func main() {
 		r.Post("/", save.New(log, psql))
 		r.Get("/", get.GetAll(log, psql))
 		r.Get("/{id}", get.GetByID(log, psql))
-		// r.Put("/{id}", )
+		r.Put("/{id}", update.New(log, psql))
 		r.Delete("/{id}", delete.New(log, psql))
 	})
 
